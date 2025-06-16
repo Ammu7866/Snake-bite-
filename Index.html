@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake Game 🍎</title>
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    canvas {
+      border: 3px solid #0f0;
+      background: #111;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .btn {
+      background: #222;
+      color: #fff;
+      text-align: center;
+      font-size: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 2px solid #0f0;
+      user-select: none;
+    }
+    .btn:active {
+      background: #0f0;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="game" width="300" height="300"></canvas>
+
+<div class="controls">
+  <div></div>
+  <div class="btn" onclick="changeDir(0, -1)">⬆</div>
+  <div></div>
+  <div class="btn" onclick="changeDir(-1, 0)">⬅</div>
+  <div class="btn" onclick="changeDir(0, 1)">⬇</div>
+  <div class="btn" onclick="changeDir(1, 0)">➡</div>
+</div>
+
+<script>
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+
+  const gridSize = 15;
+  const count = canvas.width / gridSize;
+
+  let snake = [{ x: 5, y: 5 }];
+  let apple = { x: 10, y: 10 };
+  let dx = 1;
+  let dy = 0;
+  let score = 0;
+
+  // Load apple image (base64)
+  const appleImg = new Image();
+  appleImg.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAB3ElEQVRYR+3WT0iTcRjH8d+RGF7KJ3MkhBKTIEnFyWqspUqPygkUFS8hQpR9RaOAkjVKUZf+GxKQnJEyRChRzFNmYfdvNL5zZnP2t8vZs2d3nu++y+b9zvOe97zvd+7w8LBqGo0GQ8efzbdHZnVZtdU7FaBqs/h6qIHD0MdcwZqtRoI6VrMrSmjD5J1M0QdKRj3uV4+1vFQwihbfQ7VBX1u2V92VqGxyG5nGPKObqTuFbQHR66VLSdH4FYU3Yi7EjT3GiZjlKuk9HFLcUDmnMRfXtV7JZjoWpqZ3mtUvmW0nZoRzh5ko4XaIWybTcT66R2kr1gkVTmwM9tdsb3bA+0Q50usC7vK83raXgA0ehg62EjD9sf3OTTwNm6vrl6OcdD1klIlb3eUptkl3P4nLUml1pWqCF7Wi+O4Qm0F2Al6WMaT7Ez6l8zNc3AwYTPQzlnpBG+pPuy64pSJD7SvUsKiRXYVyg3HSMpvC5hKff2Zf5PplSoXL8fugMcE3+A0bnw2ZCzEclIm1StOw2pv8gCXvqvT3+Xe0eRAb32tt4AXE6Jm3UkPfgDkZT4DtjNZJQAAAABJRU5ErkJggg==";
+
+  function changeDir(x, y) {
+    if (dx === -x && dy === -y) return;
+    dx = x;
+    dy = y;
+  }
+
+  function randomApple() {
+    let pos;
+    do {
+      pos = {
+        x: Math.floor(Math.random() * count),
+        y: Math.floor(Math.random() * count)
+      };
+    } while (snake.some(part => part.x === pos.x && part.y === pos.y));
+    return pos;
+  }
+
+  function loop() {
+    setTimeout(loop, 150);
+
+    const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+    if (
+      head.x < 0 || head.x >= count ||
+      head.y < 0 || head.y >= count ||
+      snake.some(part => part.x === head.x && part.y === head.y)
+    ) {
+      alert("Game Over! Score: " + score);
+      snake = [{ x: 5, y: 5 }];
+      apple = randomApple();
+      dx = 1;
+      dy = 0;
+      score = 0;
+      return;
+    }
+
+    snake.unshift(head);
+
+    if (head.x === apple.x && head.y === apple.y) {
+      score++;
+      apple = randomApple();
+    } else {
+      snake.pop();
+    }
+
+    draw();
+  }
+
+  function draw() {
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw apple
+    ctx.drawImage(
+      appleImg,
+      apple.x * gridSize,
+      apple.y * gridSize,
+      gridSize,
+      gridSize
+    );
+
+    // Draw snake
+    snake.forEach((part, index) => {
+      ctx.fillStyle = index === 0 ? "#00ff00" : "#0f0";
+      ctx.fillRect(
+        part.x * gridSize,
+        part.y * gridSize,
+        gridSize - 1,
+        gridSize - 1
+      );
+    });
+
+    // Score
+    ctx.fillStyle = "#fff";
+    ctx.font = "14px Arial";
+    ctx.fillText("Score: " + score, 10, canvas.height - 10);
+  }
+
+  loop();
+</script>
+
+</body>
+</html>
